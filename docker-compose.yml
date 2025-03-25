@@ -1,0 +1,55 @@
+networks:
+  test_ed_it_network:
+
+volumes:
+  db:
+
+services:
+
+  nginx:
+    container_name: test_ed_it_nginx
+    build:
+      context: .docker/nginx
+    ports:
+      - 127.0.0.206:80:81
+    volumes:
+      - ./:/app
+    depends_on:
+      - php-fpm
+    hostname: test_ed_it.loc
+    networks:
+      test_ed_it_network:
+        aliases:
+          - test_ed_it.loc
+
+  php-fpm:
+    container_name: test_ed_it_php
+    build:
+      context: .docker/php-fpm
+    volumes:
+      - ./:/app
+    networks:
+      - test_ed_it_network
+
+  db:
+    container_name: test_ed_it_mysql
+    image: mysql:5.7
+    ports:
+      - 7992:3306
+    environment:
+      MYSQL_DATABASE: test_ed_it
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - test_ed_it_network
+
+  memcached:
+    container_name: test_ed_it_memcached
+    image: memcached:1.6.9-alpine
+    ports:
+      - 7991:11211
+    networks:
+      - test_ed_it_network
